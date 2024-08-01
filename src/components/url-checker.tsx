@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import io from "socket.io-client";
-import './modal.css'
+import "./modal.css";
 
 interface UrlRecord {
   URL: string;
@@ -11,30 +11,41 @@ interface UrlRecord {
 const UrlChecker: React.FC = () => {
   const [baseUrl, setBaseUrl] = useState<string>("");
   const [records, setRecords] = useState<UrlRecord[]>([]);
-  const [history, setHistory] = useState<{ baseUrl: string, records: UrlRecord[] }[]>([]);
+  const [history, setHistory] = useState<
+    { baseUrl: string; records: UrlRecord[] }[]
+  >([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [socket, setSocket] = useState<any>(null);
+
+  // Generate a unique room ID for the user (e.g., using sessionStorage)
+  const room = sessionStorage.getItem("room") || `room-${Date.now()}`;
+  sessionStorage.setItem("room", room);
 
   useEffect(() => {
-    const socket = io("http://localhost:5000");
+    const newSocket = io("http://localhost:5000");
 
-    socket.on("connect", () => {
-      console.log("Conectado ao servidor");
+    newSocket.on("connect", () => {
+      console.log("Connected to server");
+      newSocket.emit("join", { room });
     });
 
-    socket.on("url_record", (record: UrlRecord) => {
+    newSocket.on("url_record", (record: UrlRecord) => {
       setRecords((prevRecords) => [...prevRecords, record]);
     });
 
-    socket.on("disconnect", () => {
-      console.log("Desconectado do servidor");
+    newSocket.on("disconnect", () => {
+      console.log("Disconnected from server");
     });
 
+    setSocket(newSocket);
+
     return () => {
-      socket.disconnect();
+      newSocket.emit("leave", { room });
+      newSocket.disconnect();
     };
-  }, []);
+  }, [room]);
 
   const handleCheckUrls = async () => {
     if (!baseUrl) {
@@ -47,10 +58,10 @@ const UrlChecker: React.FC = () => {
 
     try {
       setHistory((prevHistory) => [...prevHistory, { baseUrl, records }]);
-      setRecords([]); 
+      setRecords([]);
 
       await axios.get("http://localhost:5000/check-urls", {
-        params: { base_url: baseUrl },
+        params: { base_url: baseUrl, room },
       });
     } catch (err) {
       setError("Erro ao verificar URLs. Por favor, tente novamente.");
@@ -63,10 +74,14 @@ const UrlChecker: React.FC = () => {
   const toggleModal = () => setIsModalOpen(!isModalOpen);
 
   const totalRecords = records.length;
-  const economyOrSepladRecords = records.filter((record) =>
-    record.URL.toLowerCase().includes("economia") || record.URL.toLowerCase().includes("seplad")
+  const economyOrSepladRecords = records.filter(
+    (record) =>
+      record.URL.toLowerCase().includes("economia") ||
+      record.URL.toLowerCase().includes("seplad")
   ).length;
-  const okRecords = records.filter((record) => record.Status.toLowerCase() === "ok").length;
+  const okRecords = records.filter(
+    (record) => record.Status.toLowerCase() === "ok"
+  ).length;
 
   return (
     <div className="check-container">
@@ -78,7 +93,11 @@ const UrlChecker: React.FC = () => {
           onChange={(e) => setBaseUrl(e.target.value)}
           placeholder="Digite a URL base para verificar"
         />
-        <button className="button-primary" onClick={handleCheckUrls} disabled={loading}>
+        <button
+          className="button-primary"
+          onClick={handleCheckUrls}
+          disabled={loading}
+        >
           {loading ? "Verificando..." : "Verificar"}
         </button>
         <button className="download-button" onClick={toggleModal}>
@@ -92,15 +111,27 @@ const UrlChecker: React.FC = () => {
         <ul>
           {records.map((record, index) => (
             <li key={index}>
-              <a href={record.URL} target="_blank" rel="noopener noreferrer">{record.URL}</a>
-              <span className={`card-status ${record.Status.toLowerCase() === 'ok' ? 'status-ok' : 'status-error'}`}>{record.Status}</span>
+              <a href={record.URL} target="_blank" rel="noopener noreferrer">
+                {record.URL}
+              </a>
+              <span
+                className={`card-status ${
+                  record.Status.toLowerCase() === "ok"
+                    ? "status-ok"
+                    : "status-error"
+                }`}
+              >
+                {record.Status}
+              </span>
             </li>
           ))}
         </ul>
       )}
       <div className="summary">
         <p>Total de arquivos: {totalRecords}</p>
-        <p>Arquivos com "economia" ou "seplad" na URL: {economyOrSepladRecords}</p>
+        <p>
+          Arquivos com "economia" ou "seplad" na URL: {economyOrSepladRecords}
+        </p>
         <p>Status OK: {okRecords}</p>
       </div>
 
@@ -109,7 +140,9 @@ const UrlChecker: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Histórico de URLs</h2>
-            <button className="button-close" onClick={toggleModal}>Fechar</button>
+            <button className="button-close" onClick={toggleModal}>
+              Fechar
+            </button>
             {history.length === 0 ? (
               <p>Não há histórico disponível.</p>
             ) : (
@@ -122,8 +155,22 @@ const UrlChecker: React.FC = () => {
                     <ul>
                       {records.map((record, idx) => (
                         <li key={idx}>
-                          <a href={record.URL} target="_blank" rel="noopener noreferrer">{record.URL}</a>
-                          <span className={`card-status ${record.Status.toLowerCase() === 'ok' ? 'status-ok' : 'status-error'}`}>{record.Status}</span>
+                          <a
+                            href={record.URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {record.URL}
+                          </a>
+                          <span
+                            className={`card-status ${
+                              record.Status.toLowerCase() === "ok"
+                                ? "status-ok"
+                                : "status-error"
+                            }`}
+                          >
+                            {record.Status}
+                          </span>
                         </li>
                       ))}
                     </ul>

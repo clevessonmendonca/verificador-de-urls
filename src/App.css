@@ -78,7 +78,7 @@ ul {
   padding: 0;
   margin: 0;
   max-height: 500px;
-  overflow:  hidden auto ;
+  overflow: hidden auto;
   padding: var(--spacing-1) var(--spacing-2);
 }
 
@@ -155,7 +155,8 @@ ul li:hover {
   border: 1px solid rgba(var(--lines-color-rgb), 0.05);
   border-radius: 8px;
   opacity: 0.9;
-  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out, transform 0.1s ease-in-out;
+  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out,
+    transform 0.1s ease-in-out;
   padding: 0.9rem 1rem;
 }
 
@@ -168,11 +169,11 @@ ul li:hover {
   padding: 0.5rem 2rem;
   font-size: 15px;
   background: linear-gradient(137deg, #11121400 4.87%, #0c0d0f1a 75.88%);
-  border-top: 1px solid hsla(0, 0%, 100%, .06);
-  border-right: 1px solid hsla(0, 0%, 100%, .06);
-  border-left: 1px solid hsla(0, 0%, 100%, .06);
+  border-top: 1px solid hsla(0, 0%, 100%, 0.06);
+  border-right: 1px solid hsla(0, 0%, 100%, 0.06);
+  border-left: 1px solid hsla(0, 0%, 100%, 0.06);
   border-radius: var(--rounding-md);
-  box-shadow: inset 0 1px 0 0 hsla(0, 0%, 100%, .1);
+  box-shadow: inset 0 1px 0 0 hsla(0, 0%, 100%, 0.1);
 }
 
 .button-primary:hover {
@@ -204,3 +205,4 @@ ul li:hover {
     0 0 0 1px hsl(112.5deg 61.78% 42.26% / 25%),
     inset 0 -1px 0 0 rgb(59 244 19 / 20%);
 }
+
