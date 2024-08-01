@@ -17,7 +17,7 @@ const UrlChecker: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [socket, setSocket] = useState<any>(null);
+  const [, setSocket] = useState<unknown>(null);
 
   // Generate a unique room ID for the user (e.g., using sessionStorage)
   const room = sessionStorage.getItem("room") || `room-${Date.now()}`;
